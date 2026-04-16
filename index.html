@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Overwatch Heroes</title>
+</head>
+<body bgcolor="#111111" text="white">
+
+  <h1>Overwatch Heroes</h1>
+  <p>This page shows all Overwatch heroes using the OverFast API.</p>
+  <hr>
+
+  <h2>All Heroes</h2>
+  <div id="heroes">Loading...</div>
+
+  <hr>
+
+  <h2>Hero Stats</h2>
+  <p>Pick a map to see hero stats:</p>
+
+  <select id="mapSelect">
+    <option value="">-- Select a Map --</option>
+  </select>
+  <button onclick="getStats()">Get Stats</button>
+
+  <div id="stats"></div>
+
+  <script>
+
+    // Load all heroes
+    fetch("https://overfast-api.tekrop.fr/heroes")
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        var html = "";
+        for (var i = 0; i < data.length; i++) {
+          html += "<p>" + data[i].name + " - " + data[i].role + "</p>";
+        }
+        document.getElementById("heroes").innerHTML = html;
+      });
+
+    // Load maps into dropdown
+    fetch("https://overfast-api.tekrop.fr/maps")
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(data) {
+        var select = document.getElementById("mapSelect");
+        for (var i = 0; i < data.length; i++) {
+          var option = document.createElement("option");
+          option.value = data[i].key;
+          option.text = data[i].name;
+          select.appendChild(option);
+        }
+      });
+
+    // Get stats for selected map
+    function getStats() {
+      var map = document.getElementById("mapSelect").value;
+      document.getElementById("stats").innerHTML = "Loading...";
+
+      var url = "https://overfast-api.tekrop.fr/heroes/stats?platform=pc&gamemode=quickplay&region=americas";
+      if (map != "") {
+        url = url + "&map=" + map;
+      }
+
+      fetch(url)
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(data) {
+          var html = "<table border='1'>";
+          html += "<tr><th>Hero</th><th>Pick Rate</th><th>Win Rate</th></tr>";
+          for (var i = 0; i < data.length; i++) {
+            html += "<tr>";
+            html += "<td>" + data[i].hero + "</td>";
+            html += "<td>" + data[i].pickrate + "%</td>";
+            html += "<td>" + data[i].winrate + "%</td>";
+            html += "</tr>";
+          }
+          html += "</table>";
+          document.getElementById("stats").innerHTML = html;
+        });
+    }
+
+  </script>
+
+</body>
+</html>
